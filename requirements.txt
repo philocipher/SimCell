@@ -1,0 +1,7 @@
+PyQt5
+matplotlib
+folium
+aiortc
+websockets
+scipy
+pandas
