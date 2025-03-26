@@ -8,13 +8,16 @@ class SimulatorController:
     def __init__(self, model, view):
         self.model = model
         self.view = view
+        self.view.set_controller(self)
         self.timer = QTimer()
         self.timer.timeout.connect(self.run_simulation)
         
     def start(self):
         self.model.running = True
 
-
+    def set_virtual_time(self, virtual_time):
+        self.model.sim_time = virtual_time
+        self.update_view()
 
         # self.timer.start(1000 // self.model.speed) #QObject::startTimer: Timers can only be used with threads started with QThread
 
@@ -50,25 +53,38 @@ class SimulatorController:
     def run_simulation(self):
         if self.model.running:
             self.model.update()
-            # self.view.update_map()
-            # Get current simulation time
-            current_time = self.model.sim_time.total_seconds()
+            self.update_view()
             
-            # Update UE positions on the map
-            for ue in self.model.ues:
-                lat, lon = ue.get_location(current_time)
-                self.view.move_ue(ue.ue_id, lat, lon)
-                nearest_gnb = self.model.get_closest_gnb(lat, lon)
-                # print(f"UE {ue.ue_id} is closest to GNB {nearest_gnb.gn_id}")
-                self.view.draw_line(
-                    a_lat=lat,
-                    a_lon=lon,
-                    b_lat=nearest_gnb.lat,
-                    b_lon=nearest_gnb.lon,
-                    ue_id=ue.ue_id
-                )
+            
+            
+
 
     
     def set_speed(self, value):
         self.model.speed = value
         self.timer.setInterval(1000 // value)
+
+
+    def update_view(self):
+        # Get current simulation time
+        current_time = self.model.sim_time
+
+        # Update UE positions on the map
+        for ue in self.model.ues:
+            lat, lon = ue.get_location(current_time)
+            self.view.move_ue(ue.ue_id, lat, lon)
+            nearest_gnb = self.model.get_closest_gnb(lat, lon)
+            if nearest_gnb != ue.connected_gnb:
+                if ue.connected_gnb is not None:
+                    ue.connected_gnb.remove_ue(ue)
+                ue.connected_gnb = nearest_gnb
+                nearest_gnb.add_ue(ue)
+
+            # print(f"UE {ue.ue_id} is closest to GNB {nearest_gnb.gn_id}")
+            self.view.draw_line(
+                a_lat=lat,
+                a_lon=lon,
+                b_lat=nearest_gnb.lat,
+                b_lon=nearest_gnb.lon,
+                ue_id=ue.ue_id
+            )

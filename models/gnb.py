@@ -15,3 +15,12 @@ class gNB:
         self.created = created
         self.updated = updated
         self.averageSignal = averageSignal
+
+
+        self.connected_ues = {}  # List of connected UE IDs
+
+    def add_ue(self, ue):
+        self.connected_ues[ue.ue_id] = ue
+
+    def remove_ue(self, ue):
+        del self.connected_ues[ue.ue_id]

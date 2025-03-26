@@ -7,7 +7,7 @@ import http.server
 import socketserver
 from .websocket_server import run_server, wait_for_client_and_send
 import time
-from .webrtc_server import run_signaling_server, send_message_to_client, data_channel_ready
+from .webrtc_server import run_signaling_server, send_message_to_client, data_channel_ready, register_virtual_time_callback
 
 class WebView:
     def __init__(self, udp_port=None, tcp_port=None):
@@ -27,7 +27,11 @@ class WebView:
         self.block_until_data_channel_ready()
         print("✅ Data channel is ready!")
 
+        register_virtual_time_callback(self.handle_received_virtual_time)
 
+
+    def set_controller(self, controller):
+            self.controller = controller
 
     def block_until_data_channel_ready(self):
             # Block in a temporary loop until the async event is set
@@ -94,3 +98,6 @@ class WebView:
             send_message_to_client(message),
             self.async_loop
         )
+
+    def handle_received_virtual_time(self, virtual_time):
+        self.controller.set_virtual_time(virtual_time)

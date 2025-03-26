@@ -939,5 +939,56 @@ on("ready", function(){
     }
     
     
+    let virtualTime = 0;
+    const slider = document.getElementById("time-slider");
+    const timeLabel = document.getElementById("current-time");
+    const playBtn = document.getElementById("play-button");
+    const pauseBtn = document.getElementById("pause-button");
+    const advanceBtn = document.getElementById("advance-button");
+    
+    let playing = false;
+    let intervalId = null;
+    
+    function sendTimeUpdate(time) {
+        const msg = JSON.stringify({ type: "set_time", value: time });
+        console.log("⏰ Sending time update:", msg);
+        if (dataChannel && dataChannel.readyState === "open") {
+            dataChannel.send(msg);
+        }
+    }
+    
+    slider.addEventListener("input", () => {
+        virtualTime = parseInt(slider.value);
+        timeLabel.textContent = `${virtualTime}s`;
+        sendTimeUpdate(virtualTime);
+    });
+    
+    playBtn.addEventListener("click", () => {
+        if (playing) return;
+        playing = true;
+        intervalId = setInterval(() => {
+            if (virtualTime < 180) {
+                virtualTime++;
+                slider.value = virtualTime;
+                timeLabel.textContent = `${virtualTime}s`;
+                sendTimeUpdate(virtualTime);
+            }
+        }, 1000);
+    });
+    
+    pauseBtn.addEventListener("click", () => {
+        playing = false;
+        clearInterval(intervalId);
+    });
+    
+    advanceBtn.addEventListener("click", () => {
+        if (virtualTime < 180) {
+            virtualTime++;
+            slider.value = virtualTime;
+            timeLabel.textContent = `${virtualTime}s`;
+            sendTimeUpdate(virtualTime);
+        }
+    });
 
+    
 });

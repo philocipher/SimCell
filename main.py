@@ -11,9 +11,10 @@ def main():
     # view = CLIView()
     view = WebView()
     controller = SimulatorController(model, view)
+    
     controller.load_gnbs()
     controller.load_ues()
-    controller.start()
+    # controller.start()
 
 
     def loop():

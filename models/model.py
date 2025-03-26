@@ -9,6 +9,7 @@ class Model:
         self.gnb = {}
         self.speed = 1
         self.sim_time = timedelta(seconds=0)  # Virtual time
+        self.running = False
 
     def add_ue(self, ue_id, trajectory):
         ue = UE(ue_id, trajectory)

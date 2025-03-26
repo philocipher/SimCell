@@ -163,7 +163,14 @@
                 </div>
             </div>
         </div>
-
+        <div id="player-controls" style="position: fixed; bottom: 0; left: 0; right: 0; background: #2C2CA0; padding: 10px; color: white; text-align: center;">
+            <button id="play-button">Play</button>
+            <button id="pause-button">Pause</button>
+            <button id="advance-button">+1s</button>
+            <input id="time-slider" type="range" min="0" max="180" value="0" step="1" style="width: 300px;">
+            <span id="current-time">0s</span>
+          </div>
+          
     </body>
     <img id="gnb-icon" src="images/base-station.png" style="display:none;" />
     <img id="ue-icon" src="images/ue.png" style="display:none;" />
