@@ -26,7 +26,10 @@ class SimulatorController:
         gnbs = generate_random_gnbs(90, lat_range, lon_range)
 
         for gnb in gnbs:
+            self.model.add_gnb(gnb)
             self.view.place_gnb(gnb.gn_id, gnb.lat, gnb.lon)
+
+        self.model.update_gnb_tree()
 
     def load_ues(self):
         file_path = r"C:\Users\mahdi\Sumo\test\em_out.xaml"
@@ -55,6 +58,16 @@ class SimulatorController:
             for ue in self.model.ues:
                 lat, lon = ue.get_location(current_time)
                 self.view.move_ue(ue.ue_id, lat, lon)
+                nearest_gnb = self.model.get_closest_gnb(lat, lon)
+                # print(f"UE {ue.ue_id} is closest to GNB {nearest_gnb.gn_id}")
+                self.view.draw_line(
+                    a_lat=lat,
+                    a_lon=lon,
+                    b_lat=nearest_gnb.lat,
+                    b_lon=nearest_gnb.lon,
+                    ue_id=ue.ue_id
+                )
+
     
     def set_speed(self, value):
         self.model.speed = value

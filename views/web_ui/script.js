@@ -485,6 +485,9 @@ on("ready", function(){
                     console.log(`🚚 Placing UE ${msg.id} at the position`);
                     placeUeMarker(msg.id, msg.lon, msg.lat);
                     break;
+                case "draw_line":
+                    drawLine(msg.a_lat, msg.a_lon, msg.b_lat, msg.b_lon, msg.ue_id);
+                    break;
                 default:
                     console.warn("⚠️ Unknown JSON message type:", msg.type);
             }
@@ -559,14 +562,6 @@ on("ready", function(){
                 switch (msg.type) {
                     case "draw_circle":
                         drawIconMarker(msg.lon, msg.lat);
-                        break;
-                    case "place_gnb":
-                        console.log(`🚚 Placing gNB ${msg.id} at the position`);
-                        placeGnbMarker(msg.id, msg.lon, msg.lat);
-                        break;
-                    case "ue_position":
-                        console.log(`🚚 Placing UE ${msg.id} at the position`);
-                        placeUeMarker(msg.id, msg.lon, msg.lat);
                         break;
                     default:
                         console.warn("⚠️ Unknown JSON message type:", msg.type);
@@ -775,23 +770,7 @@ on("ready", function(){
         renderNetworkList();
     });
     
-    
-    // socket.onmessage = function(event) {
-    //     console.log("🛰️ Message received from server:", event.data);
-    //     const msg = JSON.parse(event.data);
-    
-    //     if (msg.type === "draw_circle") {
-    //         drawIconMarker(msg.lon, msg.lat);
-    //     } else if (msg.type === "place_gnb") {
-    //         console.log(`🚚 Placing gNB ${msg.id} at the position`);
-    //         placeGnbMarker(msg.id, msg.lon, msg.lat);
-    //     }
-    //     else if (msg.type === "ue_position") {
-    //         console.log(`🚚 Placing UE ${msg.id} at the position`);
-    //         placeUeMarker(msg.id, msg.lon, msg.lat);
-    //     }
-    // };
-    
+
 
     
     function drawRedCircle(lon, lat) {
@@ -848,43 +827,6 @@ on("ready", function(){
     let gnbLayer = null;
     
 
-    // function placeGnbMarker(id, lon, lat) {
-    //     const lonLat = new OpenLayers.LonLat(lon, lat).transform(
-    //         new OpenLayers.Projection("EPSG:4326"),
-    //         map.getProjectionObject()
-    //     );
-    
-    //     if (!gnbLayer) {
-    //         gnbLayer = new OpenLayers.Layer.Vector("gNBs");
-    //         map.addLayer(gnbLayer);
-    //     }
-    
-    //     if (gnbMarkers[id]) {
-    //         gnbMarkers[id].geometry.move(
-    //             lonLat.lon - gnbMarkers[id].geometry.x,
-    //             lonLat.lat - gnbMarkers[id].geometry.y
-    //         );
-    //     } else {
-    //         const triangle = OpenLayers.Geometry.Polygon.createRegularPolygon(
-    //             new OpenLayers.Geometry.Point(lonLat.lon, lonLat.lat),
-    //             10, // size
-    //             3, // number of sides (triangle)
-    //             0  // rotation
-    //         );
-    
-    //         const feature = new OpenLayers.Feature.Vector(triangle, null, {
-    //             fillColor: "blue",
-    //             fillOpacity: 0.7,
-    //             strokeColor: "darkblue",
-    //             strokeWidth: 2
-    //         });
-    
-    //         gnbLayer.addFeatures([feature]);
-    //         gnbMarkers[id] = feature;
-    //     }
-    //     gnbLayer.redraw();
-    // }
-
     function placeGnbMarker(id, lon, lat) {
         const lonLat = new OpenLayers.LonLat(lon, lat).transform(
             new OpenLayers.Projection("EPSG:4326"),
@@ -934,13 +876,13 @@ on("ready", function(){
             ueTrace[id].push(prevLonLat); // Save old position
     
             // Add trace marker (dimmed or smaller icon)
-            const traceIcon = new OpenLayers.Icon(
-                document.getElementById("ue-icon").src,
-                new OpenLayers.Size(12, 12), // Smaller size
-                new OpenLayers.Pixel(-6, -6) // Adjust offset
-            );
-            const traceMarker = new OpenLayers.Marker(prevLonLat.clone(), traceIcon);
-            ueLayer.addMarker(traceMarker);
+            // const traceIcon = new OpenLayers.Icon(
+            //     document.getElementById("ue-icon").src,
+            //     new OpenLayers.Size(12, 12), // Smaller size
+            //     new OpenLayers.Pixel(-6, -6) // Adjust offset
+            // );
+            // const traceMarker = new OpenLayers.Marker(prevLonLat.clone(), traceIcon);
+            // ueLayer.addMarker(traceMarker);
         }
 
     
@@ -962,6 +904,40 @@ on("ready", function(){
         ueLayer.redraw();
 
     }
+
+    const ueLines = {};
+
+    let lineLayer = new OpenLayers.Layer.Vector("UE Lines");
+    map.addLayer(lineLayer);
+    
+    /**
+     * Draw a line between a UE and its gNB, replacing the previous one for the same UE.
+     * @param {string} ueId - The ID of the UE
+     * @param {number} aLat - UE latitude
+     * @param {number} aLon - UE longitude
+     * @param {number} bLat - gNB latitude
+     * @param {number} bLon - gNB longitude
+     */
+    function drawLine(aLat, aLon, bLat, bLon, ueId) {
+        if (ueLines[ueId]) {
+            lineLayer.removeFeatures([ueLines[ueId]]);
+        }
+    
+        const aPoint = new OpenLayers.Geometry.Point(aLon, aLat)
+            .transform("EPSG:4326", map.getProjectionObject());
+        const bPoint = new OpenLayers.Geometry.Point(bLon, bLat)
+            .transform("EPSG:4326", map.getProjectionObject());
+    
+        const line = new OpenLayers.Geometry.LineString([aPoint, bPoint]);
+        const feature = new OpenLayers.Feature.Vector(line, null, {
+            strokeColor: "#00FF00",  // 💚 GREEN line
+            strokeWidth: 2
+        });
+    
+        ueLines[ueId] = feature;
+        lineLayer.addFeatures([feature]);
+    }
+    
     
 
 });

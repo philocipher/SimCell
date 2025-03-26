@@ -80,3 +80,17 @@ class WebView:
                     send_message_to_client(message),
                     self.async_loop
                 )
+        
+    def draw_line(self, a_lat, a_lon, b_lat, b_lon, ue_id=None):
+        message = {
+            "type": "draw_line",
+            "a_lat": a_lat,
+            "a_lon": a_lon,
+            "b_lat": b_lat,
+            "b_lon": b_lon,
+            "ue_id": ue_id
+        }
+        asyncio.run_coroutine_threadsafe(
+            send_message_to_client(message),
+            self.async_loop
+        )
