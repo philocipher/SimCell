@@ -24,3 +24,5 @@ def parse_emission_file(xml_file):
             trajectory_dict[vehicle_id]['y'].append(y)
 
     return trajectory_dict
+
+

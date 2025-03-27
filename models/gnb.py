@@ -18,7 +18,8 @@ class gNB:
 
 
         self.connected_ues = {}  # List of connected UE IDs
-
+        self.event_logs = [] 
+    
     def add_ue(self, ue):
         self.connected_ues[ue.ue_id] = ue
 

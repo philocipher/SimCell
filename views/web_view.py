@@ -60,7 +60,19 @@ class WebView:
         asyncio.set_event_loop(self.async_loop)
         self.async_loop.run_until_complete(run_signaling_server())
 
-
+    def add_ue(self, ue):
+        message = {
+            "type": "add_ue",
+            "id": ue.ue_id,
+            "supi": ue.supi,
+            "ambr_downlink": ue.ambr_downlink,
+            "ambr_uplink": ue.ambr_uplink
+            }
+        asyncio.run_coroutine_threadsafe(
+                send_message_to_client(message),
+                self.async_loop
+            )
+         
     def move_ue(self, ue_id, new_lat, new_lon):
         message = {
             "type": "move_ue",

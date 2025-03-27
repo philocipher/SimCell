@@ -3,6 +3,7 @@ from utils.xml_parser import *
 from utils.coordinates import *
 from models.gnb_loader import *
 from models.trajectory import *
+from models.event import *
 
 class SimulatorController:
     def __init__(self, model, view):
@@ -43,7 +44,8 @@ class SimulatorController:
             latlon = [xy_to_latlon(x, y, 33.6332, -117.8527) for x, y in zip(trajectory['x'], trajectory['y'])]
             latitudes, longitudes = zip(*latlon)  # This unpacks the tuples into separate lists            # for t, x, y in zip(trajectory['time'], trajectory['x'], trajectory['y']):
             trajectory = Trajectory(time_stamps, latitudes, longitudes)
-            self.model.add_ue(ue_id, trajectory)   
+            ue = self.model.add_ue(ue_id, trajectory)   
+            self.view.add_ue(ue)
 
 
     def stop(self):
@@ -76,6 +78,13 @@ class SimulatorController:
             nearest_gnb = self.model.get_closest_gnb(lat, lon)
             if nearest_gnb != ue.connected_gnb:
                 if ue.connected_gnb is not None:
+                    handover = HandoverEvent(ue.connected_gnb, nearest_gnb, ue)
+                    log = EventLog(current_time, handover)
+                    ue.event_logs.append(log)
+
+                    # Send event log to frontend
+                    # self.view.send_event_log(ue.ue_id, log)
+
                     ue.connected_gnb.remove_ue(ue)
                 ue.connected_gnb = nearest_gnb
                 nearest_gnb.add_ue(ue)

@@ -488,6 +488,15 @@ on("ready", function(){
                 case "draw_line":
                     drawLine(msg.a_lat, msg.a_lon, msg.b_lat, msg.b_lon, msg.ue_id);
                     break;
+                case "add_ue":
+                    console.log("🚚 Adding UE", msg);
+                    addUEToList({
+                        id: msg.id,
+                        supi: msg.supi,
+                        max_dl: msg.ambr_downlink,
+                        max_ul: msg.ambr_uplink
+                    });
+                    break;
                 default:
                     console.warn("⚠️ Unknown JSON message type:", msg.type);
             }
@@ -990,5 +999,66 @@ on("ready", function(){
         }
     });
 
+
+    function addUEToList({ id, supi, max_dl, max_ul }) {
+        const ueList = document.querySelector("#ue-list");
     
+        const li = document.createElement("li");
+        li.className = "ue-item";
+    
+        const summary = document.createElement("div");
+        summary.className = "ue-summary";
+        summary.style.display = "flex";
+        summary.style.justifyContent = "space-between";
+        summary.style.alignItems = "center";
+    
+        const label = document.createElement("span");
+        label.textContent = `UE ID: ${id}`;
+        label.style.flex = "1";
+        label.style.whiteSpace = "nowrap";
+        label.style.overflow = "hidden";
+        label.style.textOverflow = "ellipsis";
+    
+        const toggleBtn = document.createElement("button");
+        toggleBtn.textContent = "▼";
+        toggleBtn.style.background = "transparent";
+        toggleBtn.style.border = "none";
+        toggleBtn.style.color = "#fff";
+        toggleBtn.style.cursor = "pointer";
+        toggleBtn.style.fontSize = "16px";
+        toggleBtn.style.padding = "0";
+        toggleBtn.style.marginLeft = "8px";
+    
+        summary.appendChild(label);
+        summary.appendChild(toggleBtn);
+        li.appendChild(summary);
+    
+        const details = document.createElement("div");
+        details.className = "ue-details hidden";
+        details.style.padding = "6px 10px";
+        details.style.fontSize = "0.85em";
+        details.style.lineHeight = "1.4";
+        details.style.backgroundColor = "#29297a";
+        details.style.borderTop = "1px solid #444";
+    
+        details.innerHTML = `
+            <div><strong>SUPI:</strong> ${supi}</div>
+            <div><strong>Max DL:</strong> ${max_dl}</div>
+            <div><strong>Max UL:</strong> ${max_ul}</div>
+        `;
+    
+        toggleBtn.addEventListener("click", () => {
+            details.classList.toggle("hidden");
+            toggleBtn.textContent = details.classList.contains("hidden") ? "▼" : "▲";
+        });
+    
+        li.appendChild(details);
+        ueList.appendChild(li);
+    }
+    
+    
+    
+    
+
 });
+

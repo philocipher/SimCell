@@ -2,6 +2,7 @@ from .ue import UE
 from datetime import timedelta
 from scipy.spatial import KDTree
 from .gnb import gNB
+from utils.supi_generator import generate_random_supi
 
 class Model:
     def __init__(self):
@@ -12,8 +13,9 @@ class Model:
         self.running = False
 
     def add_ue(self, ue_id, trajectory):
-        ue = UE(ue_id, trajectory)
+        ue = UE(ue_id, generate_random_supi(), 1024, 1024, trajectory)
         self.ues.append(ue)
+        return ue
     
     def add_gnb(self, gnb):
         self.gnb[gnb.gn_id] = gnb
