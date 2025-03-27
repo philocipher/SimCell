@@ -862,10 +862,36 @@ on("ready", function(){
         gnbLayer.redraw();
     }
     
+    let selectedUeId = null;
+
+    const ueIcons = {
+        default: new OpenLayers.Icon(document.getElementById("ue-icon").src, new OpenLayers.Size(32, 32), new OpenLayers.Pixel(-16, -16)),
+        selected: new OpenLayers.Icon("images/ue_selected.png", new OpenLayers.Size(32, 32), new OpenLayers.Pixel(-16, -16)) // You need this image
+    };
+
     
+
+
     const ueMarkers = {};
     let ueLayer = null;
     const ueTrace = {};
+
+
+    
+    function highlightUeOnMap(ueId) {
+        if (!ueMarkers[ueId]) return;
+    
+        // Reset previous selection
+        if (selectedUeId && ueMarkers[selectedUeId]) {
+            ueMarkers[selectedUeId].setUrl(ueIcons.default.url);
+        }
+    
+        // Highlight current
+        ueMarkers[ueId].setUrl(ueIcons.selected.url);
+        selectedUeId = ueId;
+    }
+
+
     function placeUeMarker(id, lon, lat) {
         const lonLat = new OpenLayers.LonLat(lon, lat).transform(
             new OpenLayers.Projection("EPSG:4326"),
@@ -904,7 +930,7 @@ on("ready", function(){
             const iconOffset = new OpenLayers.Pixel(-(iconSize.w / 2), -(iconSize.h / 2));
             const icon = new OpenLayers.Icon(iconUrl, iconSize, iconOffset);
     
-            const marker = new OpenLayers.Marker(lonLat, icon);
+            const marker = new OpenLayers.Marker(lonLat, ueIcons.default.clone());
             marker.lonlat = lonLat.clone(); // Store position
             ueLayer.addMarker(marker);
             ueMarkers[id] = marker;
@@ -913,6 +939,9 @@ on("ready", function(){
         ueLayer.redraw();
 
     }
+
+
+    
 
     const ueLines = {};
 
@@ -1005,6 +1034,12 @@ on("ready", function(){
     
         const li = document.createElement("li");
         li.className = "ue-item";
+        li.dataset.ueId = id; // important
+    
+        // Highlight UE when clicked
+        li.addEventListener("click", () => {
+            highlightUeOnMap(id);
+        });
     
         const summary = document.createElement("div");
         summary.className = "ue-summary";
@@ -1055,6 +1090,7 @@ on("ready", function(){
         li.appendChild(details);
         ueList.appendChild(li);
     }
+    
     
     
     
