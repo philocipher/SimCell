@@ -13,10 +13,15 @@ data_channel = None
 data_channel_ready = asyncio.Event() 
 
 virtual_time_callback = None
+coord_callback = None
 
 def register_virtual_time_callback(callback):
     global virtual_time_callback
     virtual_time_callback = callback
+
+def register_coord_callback(callback):
+    global coord_callback
+    coord_callback = callback
 
 
 async def signaling_handler(websocket):
@@ -46,6 +51,13 @@ async def signaling_handler(websocket):
                     threading.Thread(target=virtual_time_callback, args=(sim_seconds,)).start()
                 else:
                     print("⚠️ Callback for set_time not set")
+            elif msg["type"] == "coords":
+                print(f"📍 Coordinates received: {msg['coords']}")
+                if coord_callback:
+                    threading.Thread(target=coord_callback, args=(msg['coords'],)).start()
+                else:
+                    print("⚠️ Callback for set_time not set")
+
 
     async for message in websocket:
         msg = json.loads(message)

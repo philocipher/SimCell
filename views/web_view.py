@@ -7,7 +7,7 @@ import http.server
 import socketserver
 from .websocket_server import run_server, wait_for_client_and_send
 import time
-from .webrtc_server import run_signaling_server, send_message_to_client, data_channel_ready, register_virtual_time_callback
+from .webrtc_server import run_signaling_server, send_message_to_client, data_channel_ready, register_virtual_time_callback, register_coord_callback
 
 class WebView:
     def __init__(self, udp_port=None, tcp_port=None):
@@ -28,6 +28,7 @@ class WebView:
         print("✅ Data channel is ready!")
 
         register_virtual_time_callback(self.handle_received_virtual_time)
+        register_coord_callback(self.handle_coords)
 
 
     def set_controller(self, controller):
@@ -136,3 +137,7 @@ class WebView:
 
     def handle_received_virtual_time(self, virtual_time):
         self.controller.set_virtual_time(virtual_time)
+
+
+    def handle_coords(self, coords):
+        self.controller.load_gnbs((coords[1], coords[3]) , (coords[0], coords[2]))

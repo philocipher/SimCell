@@ -23,9 +23,7 @@ class SimulatorController:
         # self.timer.start(1000 // self.model.speed) #QObject::startTimer: Timers can only be used with threads started with QThread
 
 
-    def load_gnbs(self):
-        lat_range = (33.64, 33.65)
-        lon_range = (-117.86, -117.83)
+    def load_gnbs(self, lat_range= (33.64, 33.65), lon_range=(-117.86, -117.83)):
         # gnbs = load_gnbs_from_csv(file_path, lat_range, lon_range)
         gnbs = generate_random_gnbs(90, lat_range, lon_range)
 

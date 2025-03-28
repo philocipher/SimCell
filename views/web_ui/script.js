@@ -469,6 +469,7 @@ on("ready", function(){
 
         dataChannel.onopen = () => {
             console.log("📡 WebRTC data channel open");
+            sendCoords();
         };
 
         dataChannel.onmessage = (event) => {
@@ -996,6 +997,32 @@ on("ready", function(){
         const msg = JSON.stringify({ type: "set_time", value: time });
         console.log("⏰ Sending time update:", msg);
         if (dataChannel && dataChannel.readyState === "open") {
+            dataChannel.send(msg);
+        }
+    }
+
+    function sendCoords() {
+        var cor = map.getExtent();
+        cor.transform(
+            map.getProjectionObject(), // from Spherical Mercator Projection
+            new OpenLayers.Projection("EPSG:4326")
+        );
+
+        
+        console.log("Bounding Box (WGS84):");
+        console.log("left (lon):", cor.left.toFixed(6));
+        console.log("bottom (lat):", cor.bottom.toFixed(6));
+        console.log("right (lon):", cor.right.toFixed(6));
+        console.log("top (lat):", cor.top.toFixed(6));
+
+        var data = { 
+            type: "coords", 
+            coords: [cor.left, cor.bottom, cor.right, cor.top] 
+        };
+
+        const msg = JSON.stringify(data);
+        if (dataChannel && dataChannel.readyState === "open") {
+            console.log("⏰ Sending coords:", msg);
             dataChannel.send(msg);
         }
     }
