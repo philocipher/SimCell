@@ -83,17 +83,35 @@ class SimulatorController:
                     ue.event_logs.append(log)
 
                     # Send event log to frontend
-                    # self.view.send_event_log(ue.ue_id, log)
+                    self.view.show_ue_event_log(ue.ue_id, log)
 
                     ue.connected_gnb.remove_ue(ue)
-                ue.connected_gnb = nearest_gnb
-                nearest_gnb.add_ue(ue)
 
+                    ue.connected_gnb = nearest_gnb
+                    nearest_gnb.add_ue(ue)
+
+                    self.model.initiate_reregistrasion(ue)
+                
+                else:
+                    ue.connected_gnb = nearest_gnb
+                    nearest_gnb.add_ue(ue)
+
+            
+            line_color = "green"
+            if ue.event_logs:
+                last_event_log = ue.event_logs[-1]
+                if last_event_log.time == current_time:
+                    if last_event_log.event.type == EventType.SUCCESSFUL_REREGISTRATION:
+                        line_color = "blue"
+                    elif last_event_log.event.type == EventType.UNSUCCESSFUL_REREGISTRATION:
+                        line_color = "red"
+                
             # print(f"UE {ue.ue_id} is closest to GNB {nearest_gnb.gn_id}")
             self.view.draw_line(
                 a_lat=lat,
                 a_lon=lon,
                 b_lat=nearest_gnb.lat,
                 b_lon=nearest_gnb.lon,
-                ue_id=ue.ue_id
+                ue_id=ue.ue_id,
+                color=line_color
             )

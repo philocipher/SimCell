@@ -27,7 +27,7 @@ async def run_server():
 async def wait_for_client_and_send(message=None):
     while not connected_clients:
         print("⏳ Waiting for client to connect...")
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
 
     print(f"🚀 Sending message to client: {message}")
     serialized = json.dumps(message)

@@ -3,6 +3,7 @@ from datetime import timedelta
 from scipy.spatial import KDTree
 from .gnb import gNB
 from utils.supi_generator import generate_random_supi
+from .event import *
 
 class Model:
     def __init__(self):
@@ -33,6 +34,29 @@ class Model:
     def update(self):
         # Advance virtual time
         self.sim_time += timedelta(seconds=1 * self.speed)
+
+
+    def initiate_reregistrasion(self, ue):
+        event = InitiateReregistrationEvent(ue, ue.connected_gnb)
+        even_log = EventLog(self.sim_time, event)
+        ue.event_logs.append(even_log)
+        
+        similar_ues = self.find_similar_ues(ue)
+        if len(similar_ues)<2:
+            event = UnsuccessfulReregistrationEvent(ue, ue.connected_gnb)
+            even_log = EventLog(self.sim_time, event)
+            ue.event_logs.append(even_log)
+            return
+        else:
+            #TODO: Filter the top 4
+            for similar_ue in similar_ues.values():
+                event = SuccessfulReregistrationEvent(similar_ue, similar_ue.connected_gnb)
+                even_log = EventLog(self.sim_time, event)
+                similar_ue.event_logs.append(even_log)
+            return
+        
+    def find_similar_ues(self, ue):
+        return ue.connected_gnb.connected_ues
 
 
 

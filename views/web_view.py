@@ -85,6 +85,20 @@ class WebView:
                 self.async_loop
             )
         
+    def show_ue_event_log(self, ue_id, event_log):
+        message = {
+            "type": "ue_event_log",
+            "ue_id": ue_id,
+            "timestamp": str(event_log.time),
+            "event_type": event_log.event.type.name,
+        }
+
+        asyncio.run_coroutine_threadsafe(
+            send_message_to_client(message),
+            self.async_loop
+        )
+
+
     def place_gnb(self, gnb_id, new_lat, new_lon):
         message = {
             "type": "place_gnb",
@@ -97,14 +111,23 @@ class WebView:
                     self.async_loop
                 )
         
-    def draw_line(self, a_lat, a_lon, b_lat, b_lon, ue_id=None):
+    def draw_line(self, a_lat, a_lon, b_lat, b_lon, ue_id=None, color="green"):
+        color_map = {
+        "red": "#FF0000",
+        "green": "#00FF00",
+        "blue": "#0000FF"
+        }
+        hex_color = color_map.get(color.lower(), "#00FF00")  # Default to green if unknown
+
+
         message = {
             "type": "draw_line",
             "a_lat": a_lat,
             "a_lon": a_lon,
             "b_lat": b_lat,
             "b_lon": b_lon,
-            "ue_id": ue_id
+            "ue_id": ue_id,
+            "color": hex_color
         }
         asyncio.run_coroutine_threadsafe(
             send_message_to_client(message),

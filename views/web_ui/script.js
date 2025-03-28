@@ -478,24 +478,28 @@ on("ready", function(){
                     drawIconMarker(msg.lon, msg.lat);
                     break;
                 case "place_gnb":
-                    console.log(`🚚 Placing gNB ${msg.id} at the position`);
+                    // console.log(`🚚 Placing gNB ${msg.id} at the position`);
                     placeGnbMarker(msg.id, msg.lon, msg.lat);
                     break;
                 case "move_ue":
-                    console.log(`🚚 Placing UE ${msg.id} at the position`);
+                    // console.log(`🚚 Placing UE ${msg.id} at the position`);
                     placeUeMarker(msg.id, msg.lon, msg.lat);
                     break;
                 case "draw_line":
-                    drawLine(msg.a_lat, msg.a_lon, msg.b_lat, msg.b_lon, msg.ue_id);
+                    drawLine(msg.a_lat, msg.a_lon, msg.b_lat, msg.b_lon, msg.ue_id, msg.color);
                     break;
                 case "add_ue":
-                    console.log("🚚 Adding UE", msg);
+                    // console.log("🚚 Adding UE", msg);
                     addUEToList({
                         id: msg.id,
                         supi: msg.supi,
                         max_dl: msg.ambr_downlink,
                         max_ul: msg.ambr_uplink
                     });
+                    break;
+                case "ue_event_log":
+                    console.log("🚚 UE event log", msg)
+                    appendEventLog(msg.ue_id, msg.timestamp, msg.event_type);
                     break;
                 default:
                     console.warn("⚠️ Unknown JSON message type:", msg.type);
@@ -934,7 +938,7 @@ on("ready", function(){
             marker.lonlat = lonLat.clone(); // Store position
             ueLayer.addMarker(marker);
             ueMarkers[id] = marker;
-            console.log("🔴 ue called with lon:", lon, "lat:", lat);
+            // console.log("🔴 ue called with lon:", lon, "lat:", lat);
         }
         ueLayer.redraw();
 
@@ -950,28 +954,29 @@ on("ready", function(){
     
     /**
      * Draw a line between a UE and its gNB, replacing the previous one for the same UE.
-     * @param {string} ueId - The ID of the UE
      * @param {number} aLat - UE latitude
      * @param {number} aLon - UE longitude
      * @param {number} bLat - gNB latitude
      * @param {number} bLon - gNB longitude
+     * @param {string} ueId - The ID of the UE
+     * @param {string} color - Hex color for the line
      */
-    function drawLine(aLat, aLon, bLat, bLon, ueId) {
+    function drawLine(aLat, aLon, bLat, bLon, ueId, color = "#00FF00") {
         if (ueLines[ueId]) {
             lineLayer.removeFeatures([ueLines[ueId]]);
         }
-    
+
         const aPoint = new OpenLayers.Geometry.Point(aLon, aLat)
             .transform("EPSG:4326", map.getProjectionObject());
         const bPoint = new OpenLayers.Geometry.Point(bLon, bLat)
             .transform("EPSG:4326", map.getProjectionObject());
-    
+
         const line = new OpenLayers.Geometry.LineString([aPoint, bPoint]);
         const feature = new OpenLayers.Feature.Vector(line, null, {
-            strokeColor: "#00FF00",  // 💚 GREEN line
+            strokeColor: color,
             strokeWidth: 2
         });
-    
+
         ueLines[ueId] = feature;
         lineLayer.addFeatures([feature]);
     }
@@ -1087,10 +1092,36 @@ on("ready", function(){
             toggleBtn.textContent = details.classList.contains("hidden") ? "▼" : "▲";
         });
     
+        const eventLogContainer = document.createElement("div");
+        eventLogContainer.className = "ue-event-log";
+        eventLogContainer.style.marginTop = "8px";
+        eventLogContainer.style.fontSize = "0.8em";
+        eventLogContainer.style.color = "#ccc";
+
+        eventLogContainer.innerHTML = "<strong>Event Log:</strong><br>";
+
+        details.appendChild(eventLogContainer);
+        details.dataset.ueId = id;  // This allows matching later
+
+
         li.appendChild(details);
         ueList.appendChild(li);
+
+
     }
+
+    function appendEventLog(ueId, timestamp, eventType) {
+        const detailSections = document.querySelectorAll(".ue-details");
     
+        detailSections.forEach(section => {
+            if (section.dataset.ueId === ueId) {
+                const logContainer = section.querySelector(".ue-event-log");
+                const entry = document.createElement("div");
+                entry.textContent = `[${timestamp}] ${eventType}`;
+                logContainer.appendChild(entry);
+            }
+        });
+    }
     
     
     
