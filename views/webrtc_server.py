@@ -57,6 +57,10 @@ async def signaling_handler(websocket):
                     threading.Thread(target=coord_callback, args=(msg['coords'],)).start()
                 else:
                     print("⚠️ Callback for set_time not set")
+            else:
+                print(f"⚠️ Unknown message type: {msg['type']}")
+
+
 
 
     async for message in websocket:

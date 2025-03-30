@@ -31,6 +31,7 @@ class WebView:
         register_coord_callback(self.handle_coords)
 
 
+
     def set_controller(self, controller):
             self.controller = controller
 

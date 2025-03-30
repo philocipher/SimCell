@@ -12,15 +12,23 @@ def main():
     view = WebView()
     controller = SimulatorController(model, view)
     
-    controller.load_gnbs()
+    # controller.load_gnbs()
     controller.load_ues()
     # controller.start()
 
 
     def loop():
+        tick_rate = 0.1  # seconds
         while True:
+            start_time = time.time()
+            
             controller.run_simulation()
-            time.sleep(0.1)  # Adjust the simulation tick rate (1s)
+            
+            elapsed = time.time() - start_time
+            sleep_time = max(0, tick_rate - elapsed)
+            
+            # print(f"🕒 run_simulation() took {elapsed:.4f} seconds")
+            time.sleep(sleep_time)
 
     threading.Thread(target=loop, daemon=True).start()
 

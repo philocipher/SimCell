@@ -992,6 +992,22 @@ on("ready", function(){
     
     let playing = false;
     let intervalId = null;
+
+    function startPlaybackInterval() {
+        if (intervalId) clearInterval(intervalId);
+    
+        const speed = parseInt(document.getElementById("speed-select").value);
+        const interval = 1000 / speed;
+    
+        intervalId = setInterval(() => {
+            if (virtualTime < 180) {
+                virtualTime++;
+                slider.value = virtualTime;
+                timeLabel.textContent = `${virtualTime}s`;
+                sendTimeUpdate(virtualTime);
+            }
+        }, interval);
+    }
     
     function sendTimeUpdate(time) {
         const msg = JSON.stringify({ type: "set_time", value: time });
@@ -1036,15 +1052,17 @@ on("ready", function(){
     playBtn.addEventListener("click", () => {
         if (playing) return;
         playing = true;
-        intervalId = setInterval(() => {
-            if (virtualTime < 180) {
-                virtualTime++;
-                slider.value = virtualTime;
-                timeLabel.textContent = `${virtualTime}s`;
-                sendTimeUpdate(virtualTime);
-            }
-        }, 1000);
+        startPlaybackInterval();
     });
+
+    document.getElementById("speed-select").addEventListener("change", () => {
+        if (playing) {
+            startPlaybackInterval(); // restart with new interval
+        }
+    });
+    
+    
+    
     
     pauseBtn.addEventListener("click", () => {
         playing = false;

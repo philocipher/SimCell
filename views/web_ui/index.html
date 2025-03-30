@@ -8,7 +8,7 @@
         <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico" />
         <script type="text/javascript" src="lib.js"></script>
         <script type="text/javascript" src="http://www.openlayers.org/api/OpenLayers.js"></script>
-        <script type="text/javascript" src="script.js?v=2"></script>
+        <script type="text/javascript" src="script.js?v=1"></script>
     </head>
     <body>
         <div id="map"></div>
@@ -58,7 +58,7 @@
 
                     <div class="options open">
                       <p>
-                        <input id="address" value="Berlin" size="18"/>
+                        <input id="address" value="Irvine" size="18"/>
                         <input id="buttonSearch" type="button" value="Search"/> </br>
                       </p>
                       <p>
@@ -170,6 +170,14 @@
             <button id="advance-button">+1s</button>
             <input id="time-slider" type="range" min="0" max="180" value="0" step="1" style="width: 300px;">
             <span id="current-time">0s</span>
+            <label for="speed-select">Speed:</label>
+            <select id="speed-select">
+            <option value="1">1x</option>
+            <option value="2">2x</option>
+            <option value="4">4x</option>
+            <option value="8">8x</option>
+            </select>
+
           </div>
           
     </body>

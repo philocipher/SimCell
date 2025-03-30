@@ -33,7 +33,26 @@ class Model:
     
     def update(self):
         # Advance virtual time
-        self.sim_time += timedelta(seconds=1 * self.speed)
+        self.sim_time += 1 * self.speed
+
+        for ue in self.ues:
+            lat, lon = ue.get_location(self.sim_time)
+            nearest_gnb = self.get_closest_gnb(lat, lon)
+
+            if nearest_gnb != ue.connected_gnb:
+                if ue.connected_gnb is not None:
+                    handover = HandoverEvent(ue.connected_gnb, nearest_gnb, ue)
+                    log = EventLog(self.sim_time, handover)
+                    ue.event_logs.append(log)
+
+                    ue.connected_gnb.remove_ue(ue)
+                    ue.connected_gnb = nearest_gnb
+                    nearest_gnb.add_ue(ue)
+
+                    self.initiate_reregistrasion(ue)
+                else:
+                    ue.connected_gnb = nearest_gnb
+                    nearest_gnb.add_ue(ue)
 
 
     def initiate_reregistrasion(self, ue):
@@ -61,4 +80,4 @@ class Model:
 
 
 
-        
+

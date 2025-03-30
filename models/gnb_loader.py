@@ -50,13 +50,16 @@ import random
 import math
 from .gnb import gNB
 
-def generate_random_gnbs(count, lat_range, lon_range, min_distance_km=0.1):
+import random
+import math
+
+def generate_random_gnbs(density_per_km2, lat_range, lon_range, min_distance_km=0.1):
     """
     Generate random gNBs within the given latitude and longitude range,
-    ensuring they are not too close to each other.
+    ensuring they are not too close to each other, based on desired density.
 
     Parameters:
-        count (int): Number of gNBs to generate.
+        density_per_km2 (float): Number of gNBs per square kilometer.
         lat_range (tuple): (min_latitude, max_latitude)
         lon_range (tuple): (min_longitude, max_longitude)
         min_distance_km (float): Minimum distance between points in kilometers.
@@ -73,6 +76,17 @@ def generate_random_gnbs(count, lat_range, lon_range, min_distance_km=0.1):
              math.cos(math.radians(lat2)) *
              math.sin(dlon / 2) ** 2)
         return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    def approximate_area_km2(lat_range, lon_range):
+        lat1, lat2 = lat_range
+        lon1, lon2 = lon_range
+        avg_lat = (lat1 + lat2) / 2
+        lat_km = 111  # Roughly 111 km per degree of latitude
+        lon_km = 111 * math.cos(math.radians(avg_lat))  # Varies with latitude
+        return abs(lat2 - lat1) * lat_km * abs(lon2 - lon1) * lon_km
+
+    area_km2 = approximate_area_km2(lat_range, lon_range)
+    count = int(density_per_km2 * area_km2)
 
     generated = []
 
