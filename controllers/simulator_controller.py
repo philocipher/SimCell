@@ -72,29 +72,37 @@ class SimulatorController:
         total_handovers = 0
         total_success = 0
         total_initiated = 0
+        total_failed = 0
         epoch_times = []
-        ue_count = len(self.model.ues)
 
+        ue_count = 0
         for ue in self.model.ues:
-            if ue.event_logs and ue.event_logs[-1].event.type == EventType.DETACH:
+            if ue.event_logs:
                 stats = calculate_ue_stats(ue)
                 print(stats)
+                if stats["mean_epoch_time"] is None:
+                    continue
 
+                ue_count += 1
                 total_handovers += stats["num_handovers"]
                 total_success += stats["successful_reregistrations"]
                 total_initiated += stats["initiated_reregistrations"]
+                total_failed += stats["unsuccessful_reregistrations"]
                 if stats["mean_epoch_time"] is not None:
                     epoch_times.append(stats["mean_epoch_time"])
 
         mean_handovers = total_handovers / ue_count if ue_count else 0
-        mean_success = total_success / ue_count if ue_count else 0
-        mean_initiated = total_initiated / ue_count if ue_count else 0
+        # mean_success = total_success / ue_count if ue_count else 0
+        # mean_initiated = total_initiated / ue_count if ue_count else 0
         overall_mean_epoch = sum(epoch_times) / len(epoch_times) if epoch_times else None
+        success_rate = 1 - total_failed / total_initiated if total_initiated > 0 else 0
 
-        print("\n--- Mean Statistics Across All UEs ---")
+        print(f"\n--- Mean Statistics Across {ue_count} UEs ---")
         print(f"Mean Handovers: {mean_handovers:.2f}")
-        print(f"Mean Successful Reregistrations: {mean_success:.2f}")
-        print(f"Mean Initiated Reregistrations: {mean_initiated:.2f}")
+        print(f"Successful Reregistrations: {total_success}")
+        print(f"Initiated Reregistrations: {total_initiated}")
+        print(f"Failed Reregistrations: {total_failed}")
+        print(f"Reregistrations Success Rate: {success_rate:.2f}")
         print(f"Mean Epoch Time: {str(overall_mean_epoch) if overall_mean_epoch else 'N/A'}")
     
     def set_speed(self, value):
@@ -152,6 +160,7 @@ def calculate_ue_stats(ue):
     num_handovers = 0
     num_success_rereg = 0
     num_initiated_rereg = 0
+    num_unsuccess_rereg = 0
 
     for log in logs:
         event_type = log.event.type
@@ -167,12 +176,15 @@ def calculate_ue_stats(ue):
                 epoch_times.append((log.time - attach_time))
             last_success_time = log.time
         
+        elif event_type == EventType.UNSUCCESSFUL_REREGISTRATION:
+            num_unsuccess_rereg += 1
+            
         elif event_type == EventType.DETACH:
             if last_success_time is not None:
                 epoch_times.append((log.time - last_success_time))
             elif attach_time is not None:
                 epoch_times.append((log.time - attach_time))
-                
+
         elif event_type == EventType.INITIATE_REREGISTRATION:
             num_initiated_rereg += 1
 
@@ -186,6 +198,7 @@ def calculate_ue_stats(ue):
         "mean_epoch_time": mean_epoch_time,
         "num_handovers": num_handovers,
         "successful_reregistrations": num_success_rereg,
+        "unsuccessful_reregistrations": num_unsuccess_rereg,
         "initiated_reregistrations": num_initiated_rereg
     }
 
