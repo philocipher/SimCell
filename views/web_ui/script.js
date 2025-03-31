@@ -486,6 +486,10 @@ on("ready", function(){
                     // console.log(`🚚 Placing UE ${msg.id} at the position`);
                     placeUeMarker(msg.id, msg.lon, msg.lat);
                     break;
+                case "kill_ue":
+                    removeUMarker(msg.id);
+                    placeDeadMarker(msg.id);
+                    break;
                 case "draw_line":
                     drawLine(msg.a_lat, msg.a_lon, msg.b_lat, msg.b_lon, msg.ue_id, msg.color);
                     break;
@@ -894,6 +898,64 @@ on("ready", function(){
         // Highlight current
         ueMarkers[ueId].setUrl(ueIcons.selected.url);
         selectedUeId = ueId;
+    }
+
+    function removeUMarker(id) {
+        // Remove marker from map
+        if (ueMarkers[id]) {
+            ueLayer.removeMarker(ueMarkers[id]);
+            // delete ueMarkers[id];
+        }
+    
+        // Remove trace
+        if (ueTrace[id]) {
+            delete ueTrace[id];
+        }
+    
+        // Remove line
+        if (ueLines[id]) {
+            lineLayer.removeFeatures([ueLines[id]]);
+            delete ueLines[id];
+        }
+    
+        // // Remove from list
+        // const ueListItem = document.querySelector(`.ue-item[data-ue-id="${id}"]`);
+        // if (ueListItem) {
+        //     ueListItem.remove();
+        // }
+    
+        // // Unhighlight if selected
+        // if (selectedUeId === id) {
+        //     selectedUeId = null;
+        // }
+    }
+
+    function placeDeadMarker(ueId) {
+        if (!ueMarkers[ueId]) {
+            console.warn(`UE with ID ${ueId} not found.`);
+            return;
+        }
+
+        const iconUrl = document.getElementById("dead-icon").src;
+        const iconSize = new OpenLayers.Size(32, 32);
+        const iconOffset = new OpenLayers.Pixel(-16, -16);
+        const newIcon = new OpenLayers.Icon(iconUrl, iconSize, iconOffset);
+    
+        const marker = ueMarkers[ueId];
+        const lonLat = marker.lonlat;
+    
+        // Remove old marker
+        ueLayer.removeMarker(marker);
+    
+        // Create and add new marker
+        const newMarker = new OpenLayers.Marker(lonLat.clone(), newIcon);
+        newMarker.lonlat = lonLat.clone();
+        ueLayer.addMarker(newMarker);
+    
+        // Update reference
+        ueMarkers[ueId] = newMarker;
+    
+        ueLayer.redraw();
     }
 
 

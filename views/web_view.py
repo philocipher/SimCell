@@ -86,7 +86,18 @@ class WebView:
                 send_message_to_client(message),
                 self.async_loop
             )
-        
+
+    def kill_ue(self, ue_id):
+        message = {
+            "type": "kill_ue",
+            "id": ue_id
+            }
+        asyncio.run_coroutine_threadsafe(
+                send_message_to_client(message),
+                self.async_loop
+            )
+
+
     def show_ue_event_log(self, ue_id, event_log):
         message = {
             "type": "ue_event_log",
