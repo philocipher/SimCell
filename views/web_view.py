@@ -128,7 +128,8 @@ class WebView:
         color_map = {
         "red": "#FF0000",
         "green": "#00FF00",
-        "blue": "#0000FF"
+        "blue": "#0000FF",
+        "orange": "#FFA500"
         }
         hex_color = color_map.get(color.lower(), "#00FF00")  # Default to green if unknown
 

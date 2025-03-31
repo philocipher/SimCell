@@ -22,7 +22,7 @@ class SimulatorController:
         self.update_view()
 
         # Print UE stats at time 
-        if self.model.sim_time == 60:
+        if self.model.sim_time % 60 == 0:
             self.overall_stats()
 
         # self.timer.start(1000 // self.model.speed) #QObject::startTimer: Timers can only be used with threads started with QThread
@@ -64,7 +64,7 @@ class SimulatorController:
             self.update_view()
             
             # Print UE stats at time 
-            if self.model.sim_time == 12:
+            if self.model.sim_time % 60 == 0:
                 self.overall_stats()
             
     def overall_stats(self):
@@ -76,14 +76,15 @@ class SimulatorController:
         ue_count = len(self.model.ues)
 
         for ue in self.model.ues:
-            stats = calculate_ue_stats(ue)
-            print(stats)
+            if ue.event_logs and ue.event_logs[-1].event.type == EventType.DETACH:
+                stats = calculate_ue_stats(ue)
+                print(stats)
 
-            total_handovers += stats["num_handovers"]
-            total_success += stats["successful_reregistrations"]
-            total_initiated += stats["initiated_reregistrations"]
-            if stats["mean_epoch_time"] is not None:
-                epoch_times.append(stats["mean_epoch_time"])
+                total_handovers += stats["num_handovers"]
+                total_success += stats["successful_reregistrations"]
+                total_initiated += stats["initiated_reregistrations"]
+                if stats["mean_epoch_time"] is not None:
+                    epoch_times.append(stats["mean_epoch_time"])
 
         mean_handovers = total_handovers / ue_count if ue_count else 0
         mean_success = total_success / ue_count if ue_count else 0
@@ -108,7 +109,7 @@ class SimulatorController:
             if ue.trajectory.time_stamps[0] <= self.model.sim_time <= ue.trajectory.time_stamps[-1]:
                 lat, lon = ue.get_location(current_time)
                 self.view.move_ue(ue.ue_id, lat, lon)
-                if self.model.sim_time == ue.trajectory.time_stamps[-1]:
+                if ue.event_logs and ue.event_logs[-1].event.type == EventType.DETACH and ue.event_logs[-1].time == current_time:
                     self.view.kill_ue(ue.ue_id)
                 nearest_gnb = ue.connected_gnb
 
@@ -120,6 +121,8 @@ class SimulatorController:
                         if last_event_log.event.type == EventType.SUCCESSFUL_REREGISTRATION:
                             line_color = "blue"
                         elif last_event_log.event.type == EventType.UNSUCCESSFUL_REREGISTRATION:
+                            line_color = "orange"
+                        elif last_event_log.event.type == EventType.DETACH:
                             line_color = "red"
                             
 
@@ -163,7 +166,13 @@ def calculate_ue_stats(ue):
             elif attach_time is not None:
                 epoch_times.append((log.time - attach_time))
             last_success_time = log.time
-
+        
+        elif event_type == EventType.DETACH:
+            if last_success_time is not None:
+                epoch_times.append((log.time - last_success_time))
+            elif attach_time is not None:
+                epoch_times.append((log.time - attach_time))
+                
         elif event_type == EventType.INITIATE_REREGISTRATION:
             num_initiated_rereg += 1
 

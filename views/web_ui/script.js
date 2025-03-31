@@ -900,35 +900,7 @@ on("ready", function(){
         selectedUeId = ueId;
     }
 
-    function removeUMarker(id) {
-        // Remove marker from map
-        if (ueMarkers[id]) {
-            ueLayer.removeMarker(ueMarkers[id]);
-            // delete ueMarkers[id];
-        }
-    
-        // Remove trace
-        if (ueTrace[id]) {
-            delete ueTrace[id];
-        }
-    
-        // Remove line
-        if (ueLines[id]) {
-            lineLayer.removeFeatures([ueLines[id]]);
-            delete ueLines[id];
-        }
-    
-        // // Remove from list
-        // const ueListItem = document.querySelector(`.ue-item[data-ue-id="${id}"]`);
-        // if (ueListItem) {
-        //     ueListItem.remove();
-        // }
-    
-        // // Unhighlight if selected
-        // if (selectedUeId === id) {
-        //     selectedUeId = null;
-        // }
-    }
+
 
     function placeDeadMarker(ueId) {
         if (!ueMarkers[ueId]) {
@@ -1043,6 +1015,39 @@ on("ready", function(){
         ueLines[ueId] = feature;
         lineLayer.addFeatures([feature]);
     }
+
+
+    function removeUMarker(id) {
+        // Remove marker from map
+        if (ueMarkers[id]) {
+            ueLayer.removeMarker(ueMarkers[id]);
+            // delete ueMarkers[id];
+        }
+    
+        // Remove trace
+        if (ueTrace[id]) {
+            delete ueTrace[id];
+        }
+    
+        // Remove line
+        if (ueLines[id]) {
+            lineLayer.removeFeatures([ueLines[id]]);
+            delete ueLines[id];
+        }
+        
+    
+        // // Remove from list
+        // const ueListItem = document.querySelector(`.ue-item[data-ue-id="${id}"]`);
+        // if (ueListItem) {
+        //     ueListItem.remove();
+        // }
+    
+        // // Unhighlight if selected
+        // if (selectedUeId === id) {
+        //     selectedUeId = null;
+        // }
+    }
+
     
     
     let virtualTime = 0;
@@ -1062,7 +1067,7 @@ on("ready", function(){
         const interval = 1000 / speed;
     
         intervalId = setInterval(() => {
-            if (virtualTime < 180) {
+            if (virtualTime < 360) {
                 virtualTime++;
                 slider.value = virtualTime;
                 timeLabel.textContent = `${virtualTime}s`;
@@ -1132,7 +1137,7 @@ on("ready", function(){
     });
     
     advanceBtn.addEventListener("click", () => {
-        if (virtualTime < 180) {
+        if (virtualTime < 360) {
             virtualTime++;
             slider.value = virtualTime;
             timeLabel.textContent = `${virtualTime}s`;

@@ -36,7 +36,7 @@ class Model:
         self.sim_time += 1 * self.speed
 
         for ue in self.ues:
-            if ue.trajectory.time_stamps[0] <= self.sim_time <= ue.trajectory.time_stamps[-1]:
+            if ue.trajectory.time_stamps[0] <= self.sim_time < ue.trajectory.time_stamps[-1]:
                 lat, lon = ue.get_location(self.sim_time)
                 nearest_gnb = self.get_closest_gnb(lat, lon)
 
@@ -54,6 +54,13 @@ class Model:
                     else:
                         ue.connected_gnb = nearest_gnb
                         nearest_gnb.add_ue(ue)
+
+            elif self.sim_time == ue.trajectory.time_stamps[-1]:
+                detach = DetachEvent(ue.connected_gnb, ue)
+                log = EventLog(self.sim_time,detach)
+                ue.event_logs.append(log)
+
+                    
 
 
     def initiate_reregistrasion(self, ue):
