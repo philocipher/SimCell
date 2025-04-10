@@ -39,10 +39,11 @@ class InitiateReregistrationEvent(Event):
         self.gnb = gnb
 
 class SuccessfulReregistrationEvent(Event):
-    def __init__(self, ue, gnb):
+    def __init__(self, ue, gnb, nearby_users):
         super().__init__(EventType.SUCCESSFUL_REREGISTRATION)
         self.gnb = gnb
         self.ue = ue
+        self.nearby_users = nearby_users
 
 class UnsuccessfulReregistrationEvent(Event):
     def __init__(self, ue, gnb):

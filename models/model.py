@@ -76,8 +76,9 @@ class Model:
             return
         else:
             #TODO: Filter the top 4
+            n = len(similar_ues)
             for similar_ue in similar_ues.values():
-                event = SuccessfulReregistrationEvent(similar_ue, similar_ue.connected_gnb)
+                event = SuccessfulReregistrationEvent(similar_ue, similar_ue.connected_gnb, n)
                 even_log = EventLog(self.sim_time, event)
                 similar_ue.event_logs.append(even_log)
             return

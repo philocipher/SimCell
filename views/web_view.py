@@ -1,4 +1,3 @@
-
 import os
 import webbrowser
 import threading
@@ -104,7 +103,32 @@ class WebView:
             "ue_id": ue_id,
             "timestamp": str(event_log.time),
             "event_type": event_log.event.type.name,
+            "details": {}
         }
+        
+        # Add event-specific fields based on event type
+        if event_log.event.type.name == "HANDOVER":
+            message["details"] = {
+                "source": event_log.event.source.gn_id,
+                "target": event_log.event.target.gn_id
+            }
+        elif event_log.event.type.name in ["ATTACH", "DETACH"]:
+            message["details"] = {
+                "gnb": event_log.event.gnb.gn_id
+            }
+        elif event_log.event.type.name == "INITIATE_REREGISTRATION":
+            message["details"] = {
+                "gnb": event_log.event.gnb.gn_id
+            }
+        elif event_log.event.type.name == "SUCCESSFUL_REREGISTRATION":
+            message["details"] = {
+                 "gnb": event_log.event.gnb.gn_id,
+                 "nearby_users": event_log.event.nearby_users
+            }
+        elif event_log.event.type.name == "UNSUCCESSFUL_REREGISTRATION":
+            message["details"] = {
+                "gnb": event_log.event.gnb.gn_id
+            }
 
         asyncio.run_coroutine_threadsafe(
             send_message_to_client(message),

@@ -504,7 +504,7 @@ on("ready", function(){
                     break;
                 case "ue_event_log":
                     console.log("🚚 UE event log", msg)
-                    appendEventLog(msg.ue_id, msg.timestamp, msg.event_type);
+                    appendEventLog(msg.ue_id, msg.timestamp, msg.event_type, msg.details);
                     break;
                 default:
                     console.warn("⚠️ Unknown JSON message type:", msg.type);
@@ -1222,14 +1222,30 @@ on("ready", function(){
 
     }
 
-    function appendEventLog(ueId, timestamp, eventType) {
+    function appendEventLog(ueId, timestamp, eventType, details = {}) {
         const detailSections = document.querySelectorAll(".ue-details");
     
         detailSections.forEach(section => {
             if (section.dataset.ueId === ueId) {
                 const logContainer = section.querySelector(".ue-event-log");
                 const entry = document.createElement("div");
-                entry.textContent = `[${timestamp}] ${eventType}`;
+                
+                // Create the basic log entry
+                let logText = `[${timestamp}] ${eventType}`;
+                
+                // Add event-specific details
+                if (eventType === "HANDOVER" && details.source && details.target) {
+                    logText += `: ${details.source} → ${details.target}`;
+                } else if (["ATTACH", "DETACH", "INITIATE_REREGISTRATION", "UNSUCCESSFUL_REREGISTRATION"].includes(eventType) && details.gnb) {
+                    logText += `: gNB ${details.gnb}`;
+                } else if (eventType === "SUCCESSFUL_REREGISTRATION") {
+                    logText += `: gNB ${details.gnb}`;
+                    if (details.nearby_users) {
+                        logText += `, Nearby Users: ${details.nearby_users}`;
+                    }
+                }
+                
+                entry.textContent = logText;
                 logContainer.appendChild(entry);
             }
         });
